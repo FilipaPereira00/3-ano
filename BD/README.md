@@ -16,6 +16,6 @@ criação da base de dados e das suas tabelas), foi feita a implementação fís
 Nota Final TP: 15
 
 ## Authors
-* Ana Filipa Pereira
+* [Ana Filipa Pereira](https://github.com/FilipaPereira00)
 * [Carolina Santejo](https://github.com/CarolinaSantejo)
 * [Raquel Costa](https://github.com/chelesgaroth)
