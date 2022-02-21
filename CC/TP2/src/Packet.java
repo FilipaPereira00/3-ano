@@ -8,14 +8,8 @@ import java.util.Arrays;
 public class Packet {
     // Cabeçalho do pacote
     short  packetSize;
-    short clientId; // -1 quando não existe nenhum cliente associado
-    private boolean[] messageType = new boolean[3]; /* Tipos de mensagem:
-                                                       1 - Inicio conexao;
-                                                       2 - Fim conexao;
-                                                       3 - Retransmição;
-                                                       4 - Pedido de ficheiro;
-                                                       5 - Envio de ficheiro;
-                                                       6 - Pedido de metadados de um ficheiro;*/
+    short clientId;
+    private boolean[] messageType = new boolean[3];
     private boolean[] ack = new boolean[3];
     private boolean[] exp = new boolean[3];
     FileInfo file = null;
@@ -84,7 +78,9 @@ public class Packet {
             dataOut.writeBoolean(exp[i]);
         }
         if (file != null) {
-            file.toBytes(dataOut);
+            dataOut.writeInt(file.fileSize);
+            dataOut.writeUTF(file.fileName);
+            dataOut.writeShort(file.packetNumber);
 
         }
         dataOut.write(data);
@@ -107,9 +103,11 @@ public class Packet {
         for (int i = 0; i < 3; i++) {
             exp[i] = dataIn.readBoolean();
         }
-        if (booleansToInt(messageType) == 4 || booleansToInt(messageType) == 5|| booleansToInt(messageType) == 6) {
+        if (booleansToInt(messageType) == 5) {
             file = new FileInfo();
-            file.fromBytes(dataIn);
+            file.fileSize = dataIn.readInt();
+            file.fileName = dataIn.readUTF();
+            file.packetNumber = dataIn.readShort();
         }
         if(packetSize - headerSize() > 0)
             data = dataIn.readNBytes(packetSize - headerSize());
@@ -118,20 +116,18 @@ public class Packet {
     }
 
     public int headerSize() {
-        if (file == null) return Short.BYTES + Short.BYTES + messageType.length + ack.length + exp.length;
+        if (file == null) return 41;
         else {
-            return Short.BYTES + Short.BYTES + messageType.length + ack.length + exp.length + file.size();
+            return 89 + file.fileName.length();
         }
     }
 
-    public int getMaxDataSize() {
-        return (int)Math.pow(2,Short.SIZE-1) - 1 - headerSize();
-    }
-
     public int packetSize() {
-        return headerSize() + data.length;
+        if (file == null) return headerSize() + data.length;
+        else {
+            return headerSize() + file.fileSize;
+        }
     }
-
 
     public boolean[] intToBooleans(int x, int n) {
         boolean[] b = new boolean[n];
@@ -189,24 +185,13 @@ public class Packet {
 
     @Override
     public String toString() {
-        if (file != null) {
-            return "Packet{" +
-                    "packetSize=" + packetSize +
-                    ", clientId=" + clientId +
-                    ", messageType=" + booleansToInt(messageType) +
-                    ", ack=" + booleansToInt(ack) +
-                    ", exp=" + booleansToInt(exp) +
-                    ", file=" + file.toString() +
-                    '}';
-        }
-        else {
-            return "Packet{" +
-                    "packetSize=" + packetSize +
-                    ", clientId=" + clientId +
-                    ", messageType=" + booleansToInt(messageType) +
-                    ", ack=" + booleansToInt(ack) +
-                    ", exp=" + booleansToInt(exp) +
-                    '}';
-        }
+        return "Packet{" +
+                "packetSize=" + packetSize +
+                ", clientId=" + clientId +
+                ", messageType=" + booleansToInt(messageType)  +
+                ", ack=" + booleansToInt(ack) +
+                ", exp=" + booleansToInt(exp) +
+                ", file=" + file.toString() +
+                '}';
     }
 }
