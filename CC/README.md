@@ -8,6 +8,6 @@ HTTP
 Nota Final: 16
 
 ## Authors
-* Ana Filipa Pereira
+* [Ana Filipa Pereira](https://github.com/FilipaPereira00)
 * [Carolina Santejo](https://github.com/CarolinaSantejo)
 * [Raquel Costa](https://github.com/chelesgaroth)
